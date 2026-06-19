@@ -1,0 +1,7 @@
+---
+# Desafio — Backup e Recuperação (tar.gz + cron + script de restore)
+- name: Backup e recuperação dos servidores
+  hosts: servidores
+  become: true
+  roles:
+    - backup

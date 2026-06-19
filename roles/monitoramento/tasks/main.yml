@@ -1,0 +1,98 @@
+---
+# ===========================================================================
+# Role: monitoramento
+# Tarefa 5 (DESAFIO) — Monitoramento e Logging.
+# Monitoramento: Prometheus Node Exporter (métricas de CPU, memória, disco...).
+# Logging: rsyslog (centralização opcional) + logrotate (rotação local).
+# O enunciado sugere Nagios/ELK mas deixa a escolha livre; usamos uma stack
+# leve e 100% instalável via Ansible.
+# ===========================================================================
+
+# --------------------------------------------------------------------------
+# MONITORAMENTO — Prometheus Node Exporter
+# --------------------------------------------------------------------------
+- name: Criar usuário de sistema para o node_exporter
+  ansible.builtin.user:
+    name: node_exporter
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+  tags: [monitoramento, metricas]
+
+- name: Baixar o Prometheus Node Exporter
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/node_exporter-{{ node_exporter_version }}.tar.gz"
+    mode: "0644"
+  tags: [monitoramento, metricas]
+
+- name: Descompactar o Node Exporter
+  ansible.builtin.unarchive:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.tar.gz"
+    dest: /tmp/
+    remote_src: true
+  tags: [monitoramento, metricas]
+
+- name: Instalar o binário do Node Exporter em /usr/local/bin
+  ansible.builtin.copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    dest: /usr/local/bin/node_exporter
+    owner: node_exporter
+    group: node_exporter
+    mode: "0755"
+    remote_src: true
+  tags: [monitoramento, metricas]
+
+- name: Criar o serviço systemd do Node Exporter (template Jinja2)
+  ansible.builtin.template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reiniciar node_exporter
+  tags: [monitoramento, metricas]
+
+- name: Habilitar e iniciar o Node Exporter
+  ansible.builtin.systemd:
+    name: node_exporter
+    state: started
+    enabled: true
+    daemon_reload: true
+  tags: [monitoramento, metricas]
+
+# --------------------------------------------------------------------------
+# LOGGING — rsyslog + logrotate
+# --------------------------------------------------------------------------
+- name: Instalar rsyslog e logrotate
+  ansible.builtin.apt:
+    name:
+      - rsyslog
+      - logrotate
+    state: present
+  tags: [monitoramento, logging]
+
+- name: Configurar encaminhamento de logs para servidor remoto (opcional)
+  ansible.builtin.template:
+    src: rsyslog-forward.conf.j2
+    dest: /etc/rsyslog.d/60-forward.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: log_servidor_remoto | length > 0
+  notify: Reiniciar rsyslog
+  tags: [monitoramento, logging]
+
+- name: Configurar rotação de logs da aplicação
+  ansible.builtin.template:
+    src: logrotate-app.j2
+    dest: /etc/logrotate.d/trabalho-iac
+    owner: root
+    group: root
+    mode: "0644"
+  tags: [monitoramento, logging]
+
+- name: Informar endpoint de métricas
+  ansible.builtin.debug:
+    msg: "Métricas disponíveis em http://{{ ansible_host | default(inventory_hostname) }}:{{ node_exporter_port }}/metrics"
+  tags: [monitoramento]

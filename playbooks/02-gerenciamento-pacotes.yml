@@ -1,0 +1,7 @@
+---
+# Tarefa 2 — Gerenciamento de pacotes (instalar/atualizar/remover) (Aula 4)
+- name: Gerenciamento de pacotes nos servidores
+  hosts: servidores
+  become: true
+  roles:
+    - gerenciamento_pacotes

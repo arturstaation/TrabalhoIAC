@@ -1,0 +1,33 @@
+# ===== Terraform =====
+# Estado da infraestrutura — NUNCA versionar (pode conter dados sensíveis)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# Arquivo de variáveis com valores reais (a partir do .example) — Aula 2, slide 39/40
+terraform.tfvars
+*.auto.tfvars
+
+# Chaves SSH / credenciais
+*.pem
+*.key
+id_rsa*
+
+# ===== Ansible =====
+# Senha do Vault em texto puro — Aula 5
+.vault_pass
+.vault_pass.txt
+vault_pass.txt
+
+# Retry de execuções
+*.retry
+
+# ===== Geral =====
+.DS_Store
+*.log
+*.bak
+*~
+.idea/
+.vscode/

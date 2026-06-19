@@ -1,0 +1,7 @@
+---
+# Desafio — Monitoramento e Logging (Node Exporter + rsyslog/logrotate)
+- name: Monitoramento e logging dos servidores
+  hosts: servidores
+  become: true
+  roles:
+    - monitoramento

@@ -1,0 +1,28 @@
+---
+# ===========================================================================
+# Playbook PRINCIPAL — orquestra todas as roles do trabalho (Aula 4).
+# Execução:
+#   ansible-playbook playbooks/site.yml --ask-vault-pass
+#
+# Para rodar só parte, use tags, ex.:
+#   ansible-playbook playbooks/site.yml --tags hardening --ask-vault-pass
+# ===========================================================================
+- name: Automação completa da infraestrutura (Trabalho Final IaC)
+  hosts: servidores
+  become: true
+
+  roles:
+    - role: configuracao_inicial   # Tarefa 1 - Configuração inicial
+      tags: [config_inicial]
+
+    - role: gerenciamento_pacotes  # Tarefa 2 - Gerenciamento de pacotes
+      tags: [pacotes]
+
+    - role: hardening              # Tarefa 3 - Hardening de segurança
+      tags: [hardening]
+
+    - role: monitoramento          # Desafio - Monitoramento e logging
+      tags: [monitoramento]
+
+    - role: backup                 # Desafio - Backup e recuperação
+      tags: [backup]

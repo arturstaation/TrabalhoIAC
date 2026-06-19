@@ -1,0 +1,17 @@
+# Configuração do yamllint (usada no CI) — propositalmente tolerante,
+# já que YAML de Ansible costuma ter linhas longas e "on/off" como valores.
+extends: default
+
+rules:
+  line-length:
+    max: 200
+    level: warning
+  truthy:
+    allowed-values: ["true", "false", "yes", "no", "on", "off"]
+  comments:
+    min-spaces-from-content: 1
+  document-start: disable
+
+ignore: |
+  terraform/
+  .github/

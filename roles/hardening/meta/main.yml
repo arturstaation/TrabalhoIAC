@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: hardening
+  author: Artur Valladares
+  description: Hardening de segurança (firewall, serviços, política de senha, fail2ban)
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+
+# Esta role depende da configuração inicial (Aula 4 - dependências em meta/)
+dependencies: []

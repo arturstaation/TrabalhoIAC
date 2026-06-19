@@ -1,0 +1,17 @@
+# ===========================================================================
+# Copie este arquivo para "terraform.tfvars" e ajuste os valores.
+#   cp terraform.tfvars.example terraform.tfvars
+# O terraform.tfvars está no .gitignore para não vazar dados (Aula 2 - slide 39).
+# ===========================================================================
+
+aws_region    = "us-east-1"
+instance_type = "t2.micro"
+instance_name = "servidor-linux-iac"
+
+# Suas chaves SSH (gere com: ssh-keygen -t rsa -b 4096)
+ssh_public_key_path  = "~/.ssh/id_rsa.pub"
+ssh_private_key_path = "~/.ssh/id_rsa"
+
+# IMPORTANTE: restrinja o SSH ao SEU IP, ex.: "203.0.113.10/32"
+# (0.0.0.0/0 libera para a internet inteira — só para teste rápido)
+allowed_ssh_cidr = "0.0.0.0/0"

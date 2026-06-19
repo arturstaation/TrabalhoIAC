@@ -1,0 +1,10 @@
+---
+# Variáveis padrão da role backup (Aula 4 - defaults/)
+backup_diretorios:
+  - /etc
+  - /home
+
+backup_destino: "/var/backups/trabalho-iac"
+backup_retencao_dias: 7
+backup_cron_hora: "2"
+backup_cron_minuto: "30"

@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: gerenciamento_pacotes
+  author: Artur Valladares
+  description: Instalação, atualização e remoção de pacotes em servidores Linux
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+
+dependencies: []

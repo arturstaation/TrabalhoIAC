@@ -1,0 +1,14 @@
+---
+# ===========================================================================
+# Variáveis padrão da role gerenciamento_pacotes (Aula 4 - defaults/)
+# ===========================================================================
+pacotes_instalar:
+  - nginx
+
+pacotes_atualizar:
+  - curl
+
+pacotes_remover:
+  - telnet
+
+atualizar_sistema_completo: false

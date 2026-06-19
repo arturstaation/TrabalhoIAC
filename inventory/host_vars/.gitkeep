@@ -1,0 +1,2 @@
+# Diretório para variáveis específicas por host (host_vars) — Aula 6.
+# Ex.: criar aqui um arquivo "servidor-aws.yml" com variáveis só desse host.

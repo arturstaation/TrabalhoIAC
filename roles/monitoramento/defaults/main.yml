@@ -1,0 +1,6 @@
+---
+# Variáveis padrão da role monitoramento (Aula 4 - defaults/)
+node_exporter_version: "1.8.2"
+node_exporter_port: 9100
+log_servidor_remoto: ""
+log_servidor_porta: 514

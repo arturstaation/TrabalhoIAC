@@ -1,0 +1,17 @@
+---
+# ===========================================================================
+# Metadados da role (Aula 4 - meta/main.yml). Sem dependências de outras roles.
+# ===========================================================================
+galaxy_info:
+  role_name: configuracao_inicial
+  author: Artur Valladares
+  description: Configuração inicial de servidores Linux (pacotes, usuários, segurança básica)
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+
+dependencies: []

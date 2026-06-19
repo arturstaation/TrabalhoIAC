@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: backup
+  author: Artur Valladares
+  description: Backup e recuperação de dados críticos via tar.gz + cron
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+
+dependencies: []

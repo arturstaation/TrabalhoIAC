@@ -1,0 +1,20 @@
+# ===========================================================================
+# Configuração do fail2ban GERADA pelo Ansible (template Jinja2 - Aula 4).
+# Não edite à mão: altere a role hardening.
+# ===========================================================================
+[DEFAULT]
+# Tempo de banimento (segundos)
+bantime  = 3600
+# Janela de tempo para contar as tentativas
+findtime = 600
+# Número de falhas antes do banimento
+maxretry = 5
+# Não banir o localhost
+ignoreip = 127.0.0.1/8 ::1
+
+[sshd]
+enabled  = true
+port     = {{ ssh_port }}
+filter   = sshd
+logpath  = /var/log/auth.log
+maxretry = {{ fail2ban_maxretry | default(5) }}

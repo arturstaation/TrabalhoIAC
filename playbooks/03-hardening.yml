@@ -1,0 +1,7 @@
+---
+# Tarefa 3 — Hardening de segurança (firewall, serviços, senha, fail2ban) (Aula 5)
+- name: Hardening de segurança dos servidores
+  hosts: servidores
+  become: true
+  roles:
+    - hardening

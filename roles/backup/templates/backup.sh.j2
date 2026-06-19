@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# ===========================================================================
+# Script de BACKUP — GERADO pelo Ansible (template Jinja2).
+# Faz backup compactado dos diretórios críticos e aplica retenção.
+# ===========================================================================
+set -euo pipefail
+
+DESTINO="{{ backup_destino }}"
+RETENCAO_DIAS={{ backup_retencao_dias }}
+DATA=$(date +%Y%m%d-%H%M%S)
+ARQUIVO="${DESTINO}/backup-${DATA}.tar.gz"
+
+# Diretórios críticos a incluir no backup
+DIRETORIOS="{{ backup_diretorios | join(' ') }}"
+
+mkdir -p "${DESTINO}"
+
+echo "[$(date)] Iniciando backup de: ${DIRETORIOS}"
+
+# Cria o tar.gz (ignora arquivos que somem durante a execução)
+tar --warning=no-file-changed -czf "${ARQUIVO}" ${DIRETORIOS} 2>/dev/null || true
+
+if [ -f "${ARQUIVO}" ]; then
+    echo "[$(date)] Backup criado: ${ARQUIVO} ($(du -h "${ARQUIVO}" | cut -f1))"
+else
+    echo "[$(date)] ERRO: backup não foi criado!"
+    exit 1
+fi
+
+# Retenção: remove backups com mais de N dias
+echo "[$(date)] Removendo backups com mais de ${RETENCAO_DIAS} dias..."
+find "${DESTINO}" -name "backup-*.tar.gz" -type f -mtime +${RETENCAO_DIAS} -delete
+
+echo "BACKUP_OK"

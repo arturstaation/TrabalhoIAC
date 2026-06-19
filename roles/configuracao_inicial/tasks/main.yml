@@ -1,0 +1,86 @@
+---
+# ===========================================================================
+# Role: configuracao_inicial
+# Tarefa 1 do trabalho — Configuração inicial de um novo servidor Linux:
+# instalação de pacotes, usuários/grupos e segurança básica.
+# Módulos usados (Aula 4): apt, copy, service, group, user, timezone, lineinfile.
+# ===========================================================================
+
+- name: Atualizar o cache de pacotes do APT
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  tags: [config_inicial, pacotes]
+
+- name: Definir o fuso horário do servidor
+  community.general.timezone:
+    name: "{{ timezone }}"
+  tags: [config_inicial]
+
+- name: Instalar pacotes base necessários
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ pacotes_base }}"
+  tags: [config_inicial, pacotes]
+
+# --- Usuários e grupos (Aula 4 - slide 23: módulos group e user) ---
+- name: Criar o grupo administrativo
+  ansible.builtin.group:
+    name: "{{ admin_group }}"
+    state: present
+  tags: [config_inicial, usuarios]
+
+- name: Criar o usuário administrativo
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    password: "{{ admin_password | password_hash('sha512') }}"
+    groups: "{{ admin_group }},sudo"
+    shell: /bin/bash
+    create_home: true
+    state: present
+  tags: [config_inicial, usuarios]
+
+- name: Conceder sudo sem senha ao grupo devops
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/{{ admin_group }}"
+    content: "%{{ admin_group }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+  tags: [config_inicial, usuarios, seguranca]
+
+- name: Autorizar a chave SSH pública do usuário admin
+  ansible.posix.authorized_key:
+    user: "{{ admin_user }}"
+    key: "{{ admin_ssh_public_key }}"
+    state: present
+  when: admin_ssh_public_key | length > 0
+  tags: [config_inicial, seguranca]
+
+# --- Segurança básica (Aula 1 - boas práticas / Aula 5) ---
+- name: Garantir que o serviço SSH esteja habilitado e ativo
+  ansible.builtin.service:
+    name: ssh
+    state: started
+    enabled: true
+  tags: [config_inicial, seguranca]
+
+- name: Definir banner de aviso legal de acesso
+  ansible.builtin.copy:
+    dest: /etc/issue.net
+    content: |
+      *****************************************************************
+      *  ACESSO RESTRITO - Apenas usuarios autorizados.              *
+      *  Toda atividade neste sistema e monitorada e registrada.     *
+      *****************************************************************
+    owner: root
+    group: root
+    mode: "0644"
+  tags: [config_inicial, seguranca]
+
+- name: Mensagem de conclusão
+  ansible.builtin.debug:
+    msg: "Configuração inicial concluída no host {{ inventory_hostname }}."
+  tags: [config_inicial]

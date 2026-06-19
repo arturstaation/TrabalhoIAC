@@ -1,0 +1,56 @@
+---
+# ===========================================================================
+# Role: backup
+# Tarefa 6 (DESAFIO) — Backup e Recuperação.
+# Cria um script de backup (tar.gz dos diretórios críticos), agenda via cron,
+# aplica retenção e disponibiliza um script de restauração.
+# Módulos: file, template, cron (Aula 4 e 6).
+# ===========================================================================
+
+- name: Garantir que o diretório de destino dos backups exista
+  ansible.builtin.file:
+    path: "{{ backup_destino }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+  tags: [backup]
+
+- name: Instalar o script de backup (template Jinja2)
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: /usr/local/bin/backup-trabalho-iac.sh
+    owner: root
+    group: root
+    mode: "0750"
+  tags: [backup]
+
+- name: Instalar o script de restauração (template Jinja2)
+  ansible.builtin.template:
+    src: restore.sh.j2
+    dest: /usr/local/bin/restore-trabalho-iac.sh
+    owner: root
+    group: root
+    mode: "0750"
+  tags: [backup, restore]
+
+# --- Agendamento via cron (módulo ansible.builtin.cron) ---
+- name: Agendar o backup diário no cron
+  ansible.builtin.cron:
+    name: "Backup diário trabalho-iac"
+    minute: "{{ backup_cron_minuto }}"
+    hour: "{{ backup_cron_hora }}"
+    job: "/usr/local/bin/backup-trabalho-iac.sh >> /var/log/backup-trabalho-iac.log 2>&1"
+    user: root
+  tags: [backup]
+
+- name: Executar um primeiro backup imediatamente (validação)
+  ansible.builtin.command: /usr/local/bin/backup-trabalho-iac.sh
+  register: backup_resultado
+  changed_when: "'BACKUP_OK' in backup_resultado.stdout"
+  tags: [backup]
+
+- name: Mostrar o resultado do backup inicial
+  ansible.builtin.debug:
+    var: backup_resultado.stdout_lines
+  tags: [backup]

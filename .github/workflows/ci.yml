@@ -1,0 +1,60 @@
+# ===========================================================================
+# Tarefa 4 — Integração Contínua (CI/CD) com GitHub Actions.
+# Alternativa ao .gitlab-ci.yml. Valida Terraform e Ansible a cada push/PR.
+# ===========================================================================
+name: CI - Valida Infraestrutura
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  ansible:
+    name: Lint e Syntax-Check do Ansible
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar Ansible e ferramentas de lint
+        run: |
+          pip install ansible ansible-lint yamllint
+          ansible-galaxy collection install -r requirements.yml
+
+      - name: yamllint
+        run: yamllint .
+        continue-on-error: true
+
+      - name: ansible-lint
+        run: ansible-lint playbooks/ roles/
+        continue-on-error: true
+
+      - name: Syntax-check dos playbooks
+        run: ansible-playbook playbooks/site.yml --syntax-check -i inventory/hosts.ini
+
+  terraform:
+    name: Validação do Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: terraform fmt
+        run: terraform -chdir=terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: terraform init
+        run: terraform -chdir=terraform init -backend=false
+
+      - name: terraform validate
+        run: terraform -chdir=terraform validate

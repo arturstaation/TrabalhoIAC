@@ -1,0 +1,10 @@
+# Rotação de logs — GERADO pelo Ansible (template Jinja2)
+/var/log/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root adm
+}

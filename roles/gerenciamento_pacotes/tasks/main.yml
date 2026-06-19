@@ -1,0 +1,58 @@
+---
+# ===========================================================================
+# Role: gerenciamento_pacotes
+# Tarefa 2 do trabalho — Instalar, atualizar e remover pacotes de software.
+# Módulo principal: apt (Aula 3 e 4). Usa loop com {{ item }} (Aula 4).
+# ===========================================================================
+
+- name: Atualizar o cache de pacotes do APT
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  tags: [pacotes]
+
+# --- INSTALAR (state: present) ---
+- name: Instalar pacotes de software
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ pacotes_instalar }}"
+  tags: [pacotes, instalar]
+
+# --- ATUALIZAR (state: latest) ---
+- name: Atualizar pacotes específicos para a última versão
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: latest
+  loop: "{{ pacotes_atualizar }}"
+  tags: [pacotes, atualizar]
+
+# --- UPGRADE completo do sistema (opcional) ---
+- name: Aplicar upgrade completo do sistema
+  ansible.builtin.apt:
+    upgrade: dist
+    autoremove: true
+    autoclean: true
+  when: atualizar_sistema_completo | bool
+  tags: [pacotes, atualizar]
+
+# --- REMOVER (state: absent) ---
+- name: Remover pacotes indesejados/inseguros
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: absent
+    purge: true
+  loop: "{{ pacotes_remover }}"
+  tags: [pacotes, remover]
+
+- name: Verificar a necessidade de reinicialização (kernel/libs)
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+  tags: [pacotes]
+
+- name: Avisar se um reboot for necessário
+  ansible.builtin.debug:
+    msg: "ATENÇÃO: o servidor {{ inventory_hostname }} precisa ser reiniciado."
+  when: reboot_required.stat.exists
+  tags: [pacotes]

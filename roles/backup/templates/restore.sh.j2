@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# ===========================================================================
+# Script de RECUPERAÇÃO — GERADO pelo Ansible (template Jinja2).
+# Restaura um backup para um diretório de destino (padrão: / ).
+# Uso:   restore-trabalho-iac.sh [arquivo.tar.gz] [destino]
+# Ex.:   restore-trabalho-iac.sh /var/backups/trabalho-iac/backup-XXXX.tar.gz /
+# ===========================================================================
+set -euo pipefail
+
+DESTINO_BACKUPS="{{ backup_destino }}"
+
+# Se nenhum arquivo for passado, usa o backup mais recente
+ARQUIVO="${1:-}"
+if [ -z "${ARQUIVO}" ]; then
+    ARQUIVO=$(ls -t "${DESTINO_BACKUPS}"/backup-*.tar.gz 2>/dev/null | head -n1 || true)
+fi
+
+DESTINO_RESTORE="${2:-/}"
+
+if [ -z "${ARQUIVO}" ] || [ ! -f "${ARQUIVO}" ]; then
+    echo "ERRO: arquivo de backup não encontrado."
+    echo "Backups disponíveis:"
+    ls -1 "${DESTINO_BACKUPS}"/backup-*.tar.gz 2>/dev/null || echo "  (nenhum)"
+    exit 1
+fi
+
+echo "Restaurando '${ARQUIVO}' em '${DESTINO_RESTORE}'..."
+read -p "Confirma? Isso pode sobrescrever arquivos. [s/N] " resp
+if [[ "${resp}" =~ ^[sS]$ ]]; then
+    tar -xzf "${ARQUIVO}" -C "${DESTINO_RESTORE}"
+    echo "RESTORE_OK"
+else
+    echo "Restauração cancelada."
+    exit 0
+fi

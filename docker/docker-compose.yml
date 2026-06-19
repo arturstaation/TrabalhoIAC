@@ -1,0 +1,27 @@
+# ===========================================================================
+# Alvo de teste LOCAL e gratuito para os playbooks Ansible.
+# Sobe um container Ubuntu 22.04 COM systemd (necessário para UFW, fail2ban,
+# node_exporter e demais serviços do hardening/monitoramento).
+#
+# Uso:
+#   docker compose up -d
+#   cd .. && ansible all -m ping
+#   ansible-playbook playbooks/site.yml --ask-vault-pass
+# ===========================================================================
+services:
+  servidor-linux:
+    build: .
+    image: trabalho-iac/ubuntu-systemd
+    container_name: servidor-linux   # precisa bater com o host do inventory/hosts.ini
+    hostname: servidor-linux
+    privileged: true                 # systemd dentro do container precisa disso
+    cgroup: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /tmp
+    command: /lib/systemd/systemd
+    ports:
+      - "8080:80"      # nginx (HTTP) do container -> localhost:8080
+      - "9100:9100"    # Node Exporter -> localhost:9100/metrics

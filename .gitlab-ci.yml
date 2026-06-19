@@ -1,0 +1,60 @@
+# ===========================================================================
+# Tarefa 4 — Integração Contínua (CI/CD) com GitLab CI (Aula 6 - slide 23/24).
+# Pipeline que valida Terraform e Ansible automaticamente a cada push,
+# garantindo que as alterações na infraestrutura sejam testadas antes do deploy.
+# ===========================================================================
+stages:
+  - lint
+  - validate
+  - deploy
+
+# --- Validação de sintaxe YAML e boas práticas Ansible ---
+ansible-lint:
+  stage: lint
+  image: python:3.11-slim
+  before_script:
+    - pip install ansible ansible-lint yamllint
+    - ansible-galaxy collection install -r requirements.yml
+  script:
+    - yamllint .
+    - ansible-lint playbooks/ roles/
+  allow_failure: true
+
+# --- Checagem de sintaxe dos playbooks (não conecta nos hosts) ---
+ansible-syntax:
+  stage: validate
+  image: python:3.11-slim
+  before_script:
+    - pip install ansible
+    - ansible-galaxy collection install -r requirements.yml
+  script:
+    - ansible-playbook playbooks/site.yml --syntax-check -i inventory/hosts.ini
+
+# --- Validação do código Terraform ---
+terraform-validate:
+  stage: validate
+  image:
+    name: hashicorp/terraform:latest
+    entrypoint: [""]
+  script:
+    - cd terraform
+    - terraform init -backend=false
+    - terraform fmt -check -recursive
+    - terraform validate
+
+# --- Deploy (execução real) — manual e só na branch principal ---
+deploy:
+  stage: deploy
+  image: python:3.11-slim
+  before_script:
+    - pip install ansible
+    - ansible-galaxy collection install -r requirements.yml
+  script:
+    # A senha do Vault vem de uma variável protegida do GitLab CI/CD
+    - echo "$ANSIBLE_VAULT_PASS" > .vault_pass
+    - ansible-playbook playbooks/site.yml --vault-password-file .vault_pass
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  environment:
+    name: producao

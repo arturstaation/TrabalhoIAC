@@ -1,0 +1,24 @@
+# ===========================================================================
+# Collections do Ansible Galaxy usadas pelas roles (Aula 7)
+# Instale com:  ansible-galaxy collection install -r requirements.yml
+# ===========================================================================
+collections:
+  # Módulos ufw, pam_limits, etc. usados no hardening (Aula 5)
+  - name: community.general
+    version: ">=7.0.0"
+
+  # Módulos apt, user, group, service, cron, systemd, lineinfile, copy, template
+  - name: ansible.posix
+    version: ">=1.5.0"
+
+# ---------------------------------------------------------------------------
+# Exemplo de uso de roles da comunidade (Ansible Galaxy — Aula 7).
+# Não são obrigatórias aqui porque implementamos as roles do zero, mas ficam
+# documentadas como referência do que foi ensinado:
+#
+# roles:
+#   - name: geerlingguy.security
+#   - name: geerlingguy.node_exporter
+#
+# Instalação:  ansible-galaxy install geerlingguy.node_exporter
+# ---------------------------------------------------------------------------

@@ -1,0 +1,22 @@
+---
+# ===========================================================================
+# ARQUIVO DE SEGREDOS (Ansible Vault) — Aula 5
+# ===========================================================================
+# ATENÇÃO: este arquivo está em TEXTO PURO apenas como modelo. Antes de subir
+# para o GitHub, CRIPTOGRAFE-O com:
+#
+#     ansible-vault encrypt inventory/group_vars/all/vault.yml
+#
+# Depois de criptografado, edite com:
+#
+#     ansible-vault edit inventory/group_vars/all/vault.yml
+#
+# E rode os playbooks com  --ask-vault-pass
+# ===========================================================================
+
+# Senha do usuário administrativo (será convertida em hash sha512 na role)
+vault_admin_password: "Tr0que@EstaSenh@Forte!2026"
+
+# Chave pública SSH autorizada para o usuário admin.
+# Cole aqui o conteúdo do seu ~/.ssh/id_rsa.pub (deixe vazio se não for usar).
+vault_admin_ssh_public_key: ""

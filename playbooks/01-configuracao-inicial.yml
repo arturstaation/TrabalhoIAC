@@ -1,0 +1,7 @@
+---
+# Tarefa 1 — Configuração inicial de um novo servidor Linux (Aula 4)
+- name: Configuração inicial do servidor
+  hosts: servidores
+  become: true
+  roles:
+    - configuracao_inicial

@@ -1,0 +1,22 @@
+---
+# ===========================================================================
+# Variáveis padrão da role hardening (Aula 4 - defaults/)
+# ===========================================================================
+ssh_port: 22
+ssh_allowed_users: "deploy ubuntu"
+
+firewall_portas_liberadas:
+  - { porta: "22", proto: "tcp", desc: "SSH" }
+
+servicos_desativar:
+  - avahi-daemon
+  - cups
+
+politica_senha:
+  pass_max_days: 90
+  pass_min_days: 1
+  pass_warn_age: 7
+  pass_min_len: 14
+
+habilitar_fail2ban: true
+fail2ban_maxretry: 5

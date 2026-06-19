@@ -1,0 +1,161 @@
+---
+# ===========================================================================
+# Role: hardening
+# Tarefa 3 do trabalho — Hardening de segurança (Aula 5):
+#  - firewall (UFW)
+#  - desativação de serviços não utilizados
+#  - SSH hardening
+#  - política de senhas (login.defs / pwquality)
+#  - fail2ban
+# Módulos: ufw, systemd, lineinfile, apt, pam_limits. Usa notify -> handlers.
+# ===========================================================================
+
+# --------------------------------------------------------------------------
+# 1) FIREWALL com UFW (módulo community.general.ufw)
+# --------------------------------------------------------------------------
+- name: Instalar o UFW (firewall)
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+  tags: [hardening, firewall]
+
+- name: Política padrão - negar todo tráfego de entrada
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+  tags: [hardening, firewall]
+
+- name: Política padrão - permitir todo tráfego de saída
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+  tags: [hardening, firewall]
+
+- name: Liberar as portas necessárias no firewall
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.porta }}"
+    proto: "{{ item.proto }}"
+    comment: "{{ item.desc }}"
+  loop: "{{ firewall_portas_liberadas }}"
+  tags: [hardening, firewall]
+
+- name: Habilitar o UFW
+  community.general.ufw:
+    state: enabled
+    logging: "on"
+  tags: [hardening, firewall]
+
+# --------------------------------------------------------------------------
+# 2) DESATIVAR serviços não utilizados (módulo systemd)
+# --------------------------------------------------------------------------
+- name: Parar e desabilitar serviços não utilizados
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop: "{{ servicos_desativar }}"
+  ignore_errors: true # nem todo serviço existe em toda instalação
+  tags: [hardening, servicos]
+
+# --------------------------------------------------------------------------
+# 3) SSH HARDENING (módulo lineinfile, sempre com validate para não travar)
+# --------------------------------------------------------------------------
+- name: Desabilitar login de root via SSH
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PermitRootLogin'
+    line: "PermitRootLogin no"
+    validate: "sshd -t -f %s"
+  notify: Reiniciar SSH
+  tags: [hardening, ssh]
+
+- name: Desabilitar autenticação por senha (somente chave SSH)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: "PasswordAuthentication no"
+    validate: "sshd -t -f %s"
+  notify: Reiniciar SSH
+  when: admin_ssh_public_key | length > 0 # só desativa senha se houver chave
+  tags: [hardening, ssh]
+
+- name: Restringir quais usuários podem logar via SSH
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?AllowUsers'
+    line: "AllowUsers {{ ssh_allowed_users }}"
+    validate: "sshd -t -f %s"
+  notify: Reiniciar SSH
+  tags: [hardening, ssh]
+
+- name: Exibir o banner de aviso no login SSH
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Banner'
+    line: "Banner /etc/issue.net"
+    validate: "sshd -t -f %s"
+  notify: Reiniciar SSH
+  tags: [hardening, ssh]
+
+# --------------------------------------------------------------------------
+# 4) POLÍTICA DE SENHAS (login.defs + libpam-pwquality)
+# --------------------------------------------------------------------------
+- name: Configurar política de envelhecimento de senhas (login.defs)
+  ansible.builtin.lineinfile:
+    path: /etc/login.defs
+    regexp: "^{{ item.chave }}"
+    line: "{{ item.chave }}\t{{ item.valor }}"
+  loop:
+    - { chave: "PASS_MAX_DAYS", valor: "{{ politica_senha.pass_max_days }}" }
+    - { chave: "PASS_MIN_DAYS", valor: "{{ politica_senha.pass_min_days }}" }
+    - { chave: "PASS_WARN_AGE", valor: "{{ politica_senha.pass_warn_age }}" }
+  tags: [hardening, senha]
+
+- name: Instalar módulo PAM de qualidade de senha
+  ansible.builtin.apt:
+    name: libpam-pwquality
+    state: present
+  tags: [hardening, senha]
+
+- name: Exigir comprimento e complexidade mínima de senha
+  ansible.builtin.lineinfile:
+    path: /etc/security/pwquality.conf
+    regexp: "^#?{{ item.chave }}"
+    line: "{{ item.chave }} = {{ item.valor }}"
+  loop:
+    - { chave: "minlen", valor: "{{ politica_senha.pass_min_len }}" }
+    - { chave: "dcredit", valor: "-1" } # ao menos 1 dígito
+    - { chave: "ucredit", valor: "-1" } # ao menos 1 maiúscula
+    - { chave: "lcredit", valor: "-1" } # ao menos 1 minúscula
+    - { chave: "ocredit", valor: "-1" } # ao menos 1 símbolo
+  tags: [hardening, senha]
+
+# --------------------------------------------------------------------------
+# 5) FAIL2BAN (proteção contra brute-force no SSH)
+# --------------------------------------------------------------------------
+- name: Instalar o fail2ban
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+  when: habilitar_fail2ban | bool
+  tags: [hardening, fail2ban]
+
+- name: Configurar a jail do SSH (template Jinja2)
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: "0644"
+  when: habilitar_fail2ban | bool
+  notify: Reiniciar fail2ban
+  tags: [hardening, fail2ban]
+
+- name: Garantir fail2ban habilitado e ativo
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
+  when: habilitar_fail2ban | bool
+  tags: [hardening, fail2ban]
