@@ -8,11 +8,13 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV container=docker
 
-# Pacotes mínimos: systemd, python3 (para o Ansible) e sudo
+# Pacotes mínimos: systemd, python3 (para o Ansible), sudo e openssh-server
+# (o openssh-server garante que as tarefas de hardening de SSH funcionem no lab)
 RUN apt-get update && apt-get install -y \
         systemd systemd-sysv \
         python3 python3-apt \
         sudo iproute2 \
+        openssh-server \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
