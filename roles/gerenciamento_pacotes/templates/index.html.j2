@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!-- Página GERADA pelo Ansible (template Jinja2) — prova de provisionamento -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trabalho IaC — Servidor Provisionado</title>
+  <style>
+    :root { --bg:#0d1117; --card:#161b22; --line:#30363d; --txt:#e6edf3; --mut:#8b949e; --ok:#3fb950; --ac:#58a6ff; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--txt); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .wrap { width:100%; max-width:760px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:32px; }
+    .top { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
+    .dot { width:12px; height:12px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 4px rgba(63,185,80,.18); }
+    h1 { font-size:1.6rem; letter-spacing:-.02em; }
+    .sub { color:var(--mut); margin:6px 0 24px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:24px; }
+    .item { background:#0d1117; border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+    .item b { display:block; font-size:.78rem; color:var(--mut); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
+    .check { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
+    .check:last-child { border-bottom:none; }
+    .check span.tick { color:var(--ok); font-weight:700; }
+    .foot { margin-top:24px; color:var(--mut); font-size:.85rem; text-align:center; }
+    code { color:var(--ac); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="dot"></div>
+        <h1>Servidor provisionado com Ansible ✓</h1>
+      </div>
+      <p class="sub">Trabalho Final de Infrastructure as Code (IaC) — Artur Valladares</p>
+
+      <div class="grid">
+        <div class="item"><b>Hostname</b>{{ ansible_hostname }}</div>
+        <div class="item"><b>Sistema</b>{{ ansible_distribution }} {{ ansible_distribution_version }}</div>
+        <div class="item"><b>Arquitetura</b>{{ ansible_architecture }}</div>
+        <div class="item"><b>Servido por</b>nginx (porta 80 → 8080)</div>
+      </div>
+
+      <div class="checks">
+        <div class="check"><span class="tick">✓</span> Configuração inicial (pacotes, usuário admin, segurança básica)</div>
+        <div class="check"><span class="tick">✓</span> Gerenciamento de pacotes (instalar / atualizar / remover)</div>
+        <div class="check"><span class="tick">✓</span> Hardening (UFW, SSH, política de senha, fail2ban)</div>
+        <div class="check"><span class="tick">✓</span> Monitoramento — Node Exporter em <code>:9100/metrics</code></div>
+        <div class="check"><span class="tick">✓</span> Backup automático agendado via cron</div>
+      </div>
+
+      <p class="foot">Esta página foi gerada automaticamente pelo Ansible via template Jinja2.</p>
+    </div>
+  </div>
+</body>
+</html>

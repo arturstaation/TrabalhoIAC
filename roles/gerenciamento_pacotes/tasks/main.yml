@@ -45,6 +45,25 @@
   loop: "{{ pacotes_remover }}"
   tags: [pacotes, remover]
 
+# --- Garantir que o nginx (se instalado) esteja no ar com uma página de demo ---
+- name: Garantir que o nginx esteja habilitado e ativo
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  when: "'nginx' in pacotes_instalar"
+  tags: [pacotes, nginx]
+
+- name: Publicar a página de demonstração do servidor (template Jinja2)
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: "0644"
+  when: "'nginx' in pacotes_instalar"
+  tags: [pacotes, nginx]
+
 - name: Verificar a necessidade de reinicialização (kernel/libs)
   ansible.builtin.stat:
     path: /var/run/reboot-required

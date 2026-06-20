@@ -55,7 +55,12 @@ docker exec "$CONTAINER" bash -lc 'cd /root/trabalho-iac && ansible-playbook pla
 
 echo ""
 echo "============================================================"
-echo " PRONTO! Para ver as evidências rodando, use:"
+echo " PRONTO! ABRA NO SEU NAVEGADOR (Windows):"
+echo ""
+echo "   http://localhost:8080          -> página do servidor (nginx)"
+echo "   http://localhost:9100/metrics  -> métricas (Node Exporter)"
+echo ""
+echo " Para ver as evidências no terminal, use:"
 echo ""
 echo "   docker exec $CONTAINER ufw status verbose"
 echo "   docker exec $CONTAINER fail2ban-client status sshd"

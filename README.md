@@ -154,6 +154,23 @@ ansible-playbook playbooks/site.yml --ask-vault-pass
 > O inventário `inventory/hosts.ini` já vem com um host local apontando para o container
 > via `ansible_connection=docker`. Veja o arquivo `docker/docker-compose.yml`.
 
+#### Atalho: testar tudo com um comando
+
+```bash
+./testar-local.sh
+```
+
+Esse script sobe o container, instala o Ansible e aplica todos os playbooks de uma vez.
+
+#### O que fica acessível no navegador (do seu Windows)
+
+Depois de aplicar os playbooks, o container publica duas portas:
+
+| URL | Serviço |
+|-----|---------|
+| http://localhost:8080 | Página do servidor (nginx) — prova visual do provisionamento |
+| http://localhost:9100/metrics | Métricas do servidor (Prometheus Node Exporter) |
+
 ---
 
 ## 6. Ansible Vault (gestão de segredos — Aula 5)
