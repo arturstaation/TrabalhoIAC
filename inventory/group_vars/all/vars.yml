@@ -66,9 +66,9 @@ ssh_allowed_users: "{{ admin_user }} ubuntu"
 # Regras de firewall (UFW) — portas liberadas
 firewall_portas_liberadas:
   - { porta: "{{ ssh_port }}", proto: "tcp", desc: "SSH" }
-  - { porta: "80",            proto: "tcp", desc: "HTTP" }
-  - { porta: "443",           proto: "tcp", desc: "HTTPS" }
-  - { porta: "9100",          proto: "tcp", desc: "Prometheus Node Exporter" }
+  - { porta: "80", proto: "tcp", desc: "HTTP" }
+  - { porta: "443", proto: "tcp", desc: "HTTPS" }
+  - { porta: "9100", proto: "tcp", desc: "Prometheus Node Exporter" }
 
 # Serviços não utilizados a desativar
 servicos_desativar:

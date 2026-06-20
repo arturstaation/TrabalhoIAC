@@ -11,6 +11,11 @@ rules:
   comments:
     min-spaces-from-content: 1
   document-start: disable
+  # Permite 1 espaço dentro de { } e [ ] (estilo usado nas listas inline do Ansible)
+  braces:
+    max-spaces-inside: 1
+  brackets:
+    max-spaces-inside: 1
 
 ignore: |
   terraform/

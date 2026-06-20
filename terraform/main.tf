@@ -67,7 +67,7 @@ resource "aws_route_table" "public_route_table" {
 }
 
 resource "aws_route_table_association" "public_route_association" {
-  subnet_id      = aws_subnet.public_subnet.id          # ID da sub-rede pública
+  subnet_id      = aws_subnet.public_subnet.id           # ID da sub-rede pública
   route_table_id = aws_route_table.public_route_table.id # ID da tabela de roteamento
 }
 
@@ -130,10 +130,10 @@ resource "aws_key_pair" "deployer" {
 
 # --- Instância EC2 (Aula 2 - slides 19 e 28 "Criando Instâncias") ---
 resource "aws_instance" "servidor" {
-  ami                    = data.aws_ami.ubuntu.id            # ID da imagem (Ubuntu 22.04)
-  instance_type          = var.instance_type                 # Tipo de instância
-  key_name               = aws_key_pair.deployer.key_name    # Chave SSH de acesso
-  subnet_id              = aws_subnet.public_subnet.id        # Sub-rede pública
+  ami                    = data.aws_ami.ubuntu.id              # ID da imagem (Ubuntu 22.04)
+  instance_type          = var.instance_type                   # Tipo de instância
+  key_name               = aws_key_pair.deployer.key_name      # Chave SSH de acesso
+  subnet_id              = aws_subnet.public_subnet.id         # Sub-rede pública
   vpc_security_group_ids = [aws_security_group.servidor_sg.id] # Firewall
 
   tags = {
