@@ -226,6 +226,21 @@ serviços) e aplica todos os playbooks. **Um comando:**
 O script: (1) confere o Docker, (2) sobe o container `servidor-linux`, (3) instala o
 Ansible nele, (4) testa o `ping` e (5) aplica o `site.yml`. Ao final mostra as URLs.
 
+**Há um playbook por etapa** — dá para rodar tudo ou uma etapa isolada, sempre automático:
+
+```bash
+./testar-local.sh        # roda TUDO (site.yml = as 6 roles em sequência)
+./testar-local.sh 01     # só a etapa 1 (configuração inicial)
+./testar-local.sh 02     # só a etapa 2 (gerenciamento de pacotes)
+./testar-local.sh 03     # só a etapa 3 (hardening)
+./testar-local.sh 04     # só a etapa 4 (monitoramento)
+./testar-local.sh 05     # só a etapa 5 (backup)
+./testar-local.sh 06     # só a etapa 6 (aplicação: API + front)
+```
+
+> Cada etapa corresponde a um arquivo em `playbooks/` (`01-...yml` … `06-...yml`), e o
+> `site.yml` os orquestra. Você nunca precisa rodar nada na mão dentro do servidor.
+
 > Detalhe técnico: como o Windows não tem Ansible nativo, no teste local o Ansible roda
 > **de dentro do container** (conexão local). As roles e o resultado são idênticos ao
 > da AWS — muda apenas de onde o comando é disparado.

@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 # ===========================================================================
-# Testa o trabalho INTEIRO localmente no Docker, num comando só.
+# Testa o trabalho localmente no Docker, num comando só.
 # Sobe um servidor Ubuntu 22.04 (com systemd), instala o Ansible nele e
-# aplica todos os playbooks. Funciona no Git Bash (Windows), WSL, Linux e Mac.
+# aplica os playbooks. Funciona no Git Bash (Windows), WSL, Linux e Mac.
 #
-# Uso:   ./testar-local.sh
+# Uso:
+#   ./testar-local.sh                 # roda TUDO (playbooks/site.yml)
+#   ./testar-local.sh 01              # roda só a etapa 1 (configuração inicial)
+#   ./testar-local.sh 03              # roda só a etapa 3 (hardening)
+#   ./testar-local.sh hardening       # roda só por tag (ex.: hardening)
+#
+# Etapas:  01=config inicial  02=pacotes  03=hardening
+#          04=monitoramento   05=backup   06=aplicação (API+front)
+#
 # Pré-requisito: Docker Desktop aberto e rodando.
 # ===========================================================================
 set -euo pipefail
@@ -13,6 +21,19 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 CONTAINER="servidor-linux"
+
+# --- Descobre o que rodar a partir do argumento opcional ---
+ARG="${1:-}"
+case "$ARG" in
+  "")                  PLAYBOOK="playbooks/site.yml"; EXTRA=""; DESC="TODOS os playbooks" ;;
+  01) PLAYBOOK="playbooks/01-configuracao-inicial.yml"; EXTRA=""; DESC="etapa 1 (configuração inicial)" ;;
+  02) PLAYBOOK="playbooks/02-gerenciamento-pacotes.yml"; EXTRA=""; DESC="etapa 2 (gerenciamento de pacotes)" ;;
+  03) PLAYBOOK="playbooks/03-hardening.yml"; EXTRA=""; DESC="etapa 3 (hardening)" ;;
+  04) PLAYBOOK="playbooks/04-monitoramento.yml"; EXTRA=""; DESC="etapa 4 (monitoramento)" ;;
+  05) PLAYBOOK="playbooks/05-backup.yml"; EXTRA=""; DESC="etapa 5 (backup)" ;;
+  06) PLAYBOOK="playbooks/06-aplicacao.yml"; EXTRA=""; DESC="etapa 6 (aplicação)" ;;
+  *)  PLAYBOOK="playbooks/site.yml"; EXTRA="--tags $ARG"; DESC="tag '$ARG' do site.yml" ;;
+esac
 
 echo "==> [1/6] Verificando se o Docker está rodando..."
 if ! docker info >/dev/null 2>&1; then
@@ -50,23 +71,26 @@ docker exec "$CONTAINER" bash -lc '
   ansible all -m ping
 '
 
-echo "==> [6/6] Aplicando TODOS os playbooks (site.yml)..."
-docker exec "$CONTAINER" bash -lc 'cd /root/trabalho-iac && ansible-playbook playbooks/site.yml'
+echo "==> [6/6] Aplicando: $DESC ..."
+docker exec "$CONTAINER" bash -lc "cd /root/trabalho-iac && ansible-playbook $PLAYBOOK $EXTRA"
 
 echo ""
 echo "============================================================"
 echo " PRONTO! ABRA NO SEU NAVEGADOR (Windows):"
 echo ""
-echo "   http://localhost:8080          -> página do servidor (nginx)"
-echo "   http://localhost:9100/metrics  -> métricas (Node Exporter)"
+echo "   http://localhost:8080                -> página do servidor"
+echo "   http://localhost:8080/produtos.html  -> front (catálogo de produtos)"
+echo "   http://localhost:8080/api/produtos   -> API (JSON)"
+echo "   http://localhost:9100/metrics        -> métricas (Node Exporter)"
 echo ""
 echo " Para ver as evidências no terminal, use:"
 echo ""
 echo "   docker exec $CONTAINER ufw status verbose"
 echo "   docker exec $CONTAINER fail2ban-client status sshd"
-echo "   docker exec $CONTAINER curl -s localhost:9100/metrics | head"
 echo "   docker exec $CONTAINER ls -lh /var/backups/trabalho-iac/"
+echo "   docker exec $CONTAINER sqlite3 /opt/app/dados.db 'SELECT * FROM produtos;'"
 echo ""
-echo " Para abrir um shell no servidor:  docker exec -it $CONTAINER bash"
-echo " Para derrubar tudo:               docker compose -f docker/docker-compose.yml down"
+echo " Rodar só uma etapa:   ./testar-local.sh 03   (01..06)"
+echo " Shell no servidor:    docker exec -it $CONTAINER bash"
+echo " Derrubar tudo:        docker compose -f docker/docker-compose.yml down -v"
 echo "============================================================"
