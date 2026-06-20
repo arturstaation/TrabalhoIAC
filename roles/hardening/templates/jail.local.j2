@@ -3,6 +3,9 @@
 # Não edite à mão: altere a role hardening.
 # ===========================================================================
 [DEFAULT]
+# Lê os eventos do journald (systemd) em vez de /var/log/auth.log.
+# Mais robusto: funciona mesmo em sistemas que não geram auth.log.
+backend  = systemd
 # Tempo de banimento (segundos)
 bantime  = 3600
 # Janela de tempo para contar as tentativas
@@ -16,5 +19,4 @@ ignoreip = 127.0.0.1/8 ::1
 enabled  = true
 port     = {{ ssh_port }}
 filter   = sshd
-logpath  = /var/log/auth.log
 maxretry = {{ fail2ban_maxretry | default(5) }}

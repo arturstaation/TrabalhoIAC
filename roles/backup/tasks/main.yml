@@ -7,6 +7,19 @@
 # Módulos: file, template, cron (Aula 4 e 6).
 # ===========================================================================
 
+- name: Garantir que o serviço de cron esteja instalado
+  ansible.builtin.apt:
+    name: cron
+    state: present
+  tags: [backup]
+
+- name: Garantir que o cron esteja habilitado e ativo
+  ansible.builtin.service:
+    name: cron
+    state: started
+    enabled: true
+  tags: [backup]
+
 - name: Garantir que o diretório de destino dos backups exista
   ansible.builtin.file:
     path: "{{ backup_destino }}"
