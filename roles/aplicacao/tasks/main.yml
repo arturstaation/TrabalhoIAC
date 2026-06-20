@@ -70,6 +70,15 @@
   notify: Reiniciar nginx
   tags: [aplicacao, nginx]
 
+- name: Publicar o front-end de produtos (template Jinja2)
+  ansible.builtin.template:
+    src: produtos.html.j2
+    dest: /var/www/html/produtos.html
+    owner: www-data
+    group: www-data
+    mode: "0644"
+  tags: [aplicacao, nginx]
+
 - name: Aguardar a API responder
   ansible.builtin.uri:
     url: "http://127.0.0.1:{{ app_port }}/api/produtos"

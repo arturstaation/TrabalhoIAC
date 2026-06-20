@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!-- Front-end GERADO pelo Ansible — consome a API /api/produtos -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produtos — Trabalho IaC</title>
+  <style>
+    :root { --bg:#0d1117; --card:#161b22; --line:#30363d; --txt:#e6edf3; --mut:#8b949e; --ok:#3fb950; --ac:#58a6ff; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--txt); min-height:100vh; padding:32px 20px; }
+    .wrap { max-width:880px; margin:0 auto; }
+    header { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+    .dot { width:11px; height:11px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 4px rgba(63,185,80,.18); }
+    h1 { font-size:1.5rem; letter-spacing:-.02em; }
+    .sub { color:var(--mut); margin:6px 0 26px; font-size:.92rem; }
+    .sub code { color:var(--ac); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+    .prod { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; transition:border-color .15s; }
+    .prod:hover { border-color:var(--ac); }
+    .prod .id { font-size:.72rem; color:var(--mut); }
+    .prod .nome { font-size:1.08rem; font-weight:600; margin:6px 0 10px; }
+    .prod .preco { font-size:1.25rem; color:var(--ok); font-weight:700; }
+    .bar { display:flex; gap:10px; align-items:center; margin-bottom:18px; }
+    button { background:var(--ac); color:#0d1117; border:none; border-radius:8px; padding:9px 16px; font-weight:600; cursor:pointer; }
+    button:hover { opacity:.9; }
+    .status { color:var(--mut); font-size:.85rem; }
+    .foot { margin-top:28px; color:var(--mut); font-size:.82rem; text-align:center; }
+    a { color:var(--ac); text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header><div class="dot"></div><h1>Catálogo de Produtos</h1></header>
+    <p class="sub">Dados servidos pela API Python em <code>GET /api/produtos</code> (banco SQLite). &nbsp;<a href="/">← voltar</a></p>
+
+    <div class="bar">
+      <button onclick="carregar()">↻ Recarregar</button>
+      <span class="status" id="status">carregando…</span>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <p class="foot">Front-end estático (nginx) → API Flask → SQLite. Tudo implantado via Ansible.</p>
+  </div>
+
+  <script>
+    async function carregar() {
+      const grid = document.getElementById('grid');
+      const status = document.getElementById('status');
+      status.textContent = 'carregando…';
+      grid.innerHTML = '';
+      try {
+        const resp = await fetch('/api/produtos');
+        const produtos = await resp.json();
+        status.textContent = produtos.length + ' produtos carregados da API';
+        for (const p of produtos) {
+          const preco = p.preco.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+          grid.insertAdjacentHTML('beforeend',
+            `<div class="prod">
+               <div class="id">#${p.id}</div>
+               <div class="nome">${p.nome}</div>
+               <div class="preco">${preco}</div>
+             </div>`);
+        }
+      } catch (e) {
+        status.textContent = 'erro ao consultar a API: ' + e;
+      }
+    }
+    carregar();
+  </script>
+</body>
+</html>
