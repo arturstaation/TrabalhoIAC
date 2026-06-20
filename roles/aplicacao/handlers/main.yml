@@ -1,0 +1,12 @@
+---
+# Handlers da role aplicacao (Aula 4)
+- name: Reiniciar aplicacao
+  ansible.builtin.systemd:
+    name: aplicacao
+    state: restarted
+    daemon_reload: true
+
+- name: Reiniciar nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted

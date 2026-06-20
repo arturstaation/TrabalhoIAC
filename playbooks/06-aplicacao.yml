@@ -1,0 +1,7 @@
+---
+# Extra — Implanta a API de exemplo (Python + Flask + SQLite)
+- name: Implantar a aplicação de exemplo
+  hosts: servidores
+  become: true
+  roles:
+    - aplicacao

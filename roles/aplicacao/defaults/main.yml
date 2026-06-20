@@ -1,0 +1,5 @@
+---
+# Variáveis padrão da role aplicacao (Aula 4 - defaults/)
+app_dir: "/opt/app"
+app_db_path: "/opt/app/dados.db"
+app_port: 5000

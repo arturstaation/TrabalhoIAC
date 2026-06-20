@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+# ===========================================================================
+# API de exemplo (Python + Flask + SQLite) — implantada pelo Ansible.
+# Banco "nasce populado": se a tabela estiver vazia no start, é semeada.
+# Endpoints:  GET /api            -> status do serviço
+#             GET /api/produtos   -> lista os produtos do banco
+# ===========================================================================
+import os
+import sqlite3
+from flask import Flask, jsonify
+
+DB = "{{ app_db_path }}"
+app = Flask(__name__)
+
+
+def init_db():
+    """Cria o banco e o popula com dados iniciais (idempotente)."""
+    os.makedirs(os.path.dirname(DB), exist_ok=True)
+    con = sqlite3.connect(DB)
+    cur = con.cursor()
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS produtos ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, preco REAL)"
+    )
+    cur.execute("SELECT COUNT(*) FROM produtos")
+    if cur.fetchone()[0] == 0:
+        cur.executemany(
+            "INSERT INTO produtos (nome, preco) VALUES (?, ?)",
+            [
+                ("Notebook", 3500.00),
+                ("Mouse", 80.00),
+                ("Teclado Mecânico", 150.00),
+                ("Monitor 24\"", 1200.00),
+                ("Headset", 250.00),
+            ],
+        )
+    con.commit()
+    con.close()
+
+
+@app.route("/api")
+def home():
+    return jsonify({
+        "status": "ok",
+        "servico": "API Trabalho IaC",
+        "implantado_por": "Ansible",
+        "endpoints": ["/api", "/api/produtos"],
+    })
+
+
+@app.route("/api/produtos")
+def produtos():
+    con = sqlite3.connect(DB)
+    con.row_factory = sqlite3.Row
+    rows = con.execute("SELECT * FROM produtos ORDER BY id").fetchall()
+    con.close()
+    return jsonify([dict(r) for r in rows])
+
+
+if __name__ == "__main__":
+    init_db()
+    app.run(host="127.0.0.1", port={{ app_port }})

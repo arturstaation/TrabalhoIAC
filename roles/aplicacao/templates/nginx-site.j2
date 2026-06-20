@@ -1,0 +1,21 @@
+# Site nginx — GERADO pelo Ansible (template Jinja2).
+# Serve a página estática em / e faz proxy reverso de /api para a API Flask.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html;
+
+    # Página de demonstração
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # API Python (proxy reverso para o Flask em 127.0.0.1:{{ app_port }})
+    location /api {
+        proxy_pass http://127.0.0.1:{{ app_port }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}

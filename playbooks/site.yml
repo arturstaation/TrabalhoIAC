@@ -26,3 +26,6 @@
 
     - role: backup                 # Desafio - Backup e recuperação
       tags: [backup]
+
+    - role: aplicacao              # Extra - API Python + SQLite (banco populado)
+      tags: [aplicacao]

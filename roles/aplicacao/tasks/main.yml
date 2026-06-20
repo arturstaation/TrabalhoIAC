@@ -1,0 +1,86 @@
+---
+# ===========================================================================
+# Role: aplicacao
+# Implanta uma API de exemplo (Python + Flask + SQLite) no servidor.
+# O banco "nasce populado" (a própria API semeia os dados no primeiro start).
+# A API é exposta via nginx (proxy reverso em /api), sem abrir nova porta.
+# ===========================================================================
+
+- name: Instalar Python, Flask e SQLite
+  ansible.builtin.apt:
+    name:
+      - python3
+      - python3-flask
+      - sqlite3
+    state: present
+    update_cache: true
+  tags: [aplicacao]
+
+- name: Criar o diretório da aplicação
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  tags: [aplicacao]
+
+- name: Implantar o código da API (template Jinja2)
+  ansible.builtin.template:
+    src: app.py.j2
+    dest: "{{ app_dir }}/app.py"
+    owner: root
+    group: root
+    mode: "0755"
+  notify: Reiniciar aplicacao
+  tags: [aplicacao]
+
+- name: Criar o serviço systemd da API
+  ansible.builtin.template:
+    src: aplicacao.service.j2
+    dest: /etc/systemd/system/aplicacao.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reiniciar aplicacao
+  tags: [aplicacao]
+
+- name: Habilitar e iniciar a API
+  ansible.builtin.systemd:
+    name: aplicacao
+    state: started
+    enabled: true
+    daemon_reload: true
+  tags: [aplicacao]
+
+# --- Expor a API via nginx (proxy reverso em /api) ---
+- name: Garantir que o nginx esteja instalado
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+  tags: [aplicacao, nginx]
+
+- name: Configurar o nginx para servir a página e a API
+  ansible.builtin.template:
+    src: nginx-site.j2
+    dest: /etc/nginx/sites-available/default
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reiniciar nginx
+  tags: [aplicacao, nginx]
+
+- name: Aguardar a API responder
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ app_port }}/api/produtos"
+    status_code: 200
+  register: api_check
+  retries: 5
+  delay: 2
+  until: api_check.status == 200
+  tags: [aplicacao]
+
+- name: Mostrar a resposta da API (prova de funcionamento)
+  ansible.builtin.debug:
+    msg: "API respondendo com {{ api_check.json | length }} produtos cadastrados."
+  tags: [aplicacao]
